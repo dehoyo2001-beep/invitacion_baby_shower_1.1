@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Shower - Invitación Especial</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Poppins:wght@300;400;600&family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        :root {
+            --pink-pastel: #FADADD;
+            --lilac-pastel: #E6E6FA;
+            --cream: #FFFDD0;
+            --gold: #D4AF37;
+            --soft-blue: #BDE0FE;
+            --text-color: #5D5D5D;
+            --white: #ffffff;
+            --beige: #F5F5DC;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--beige);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* --- PORTADA --- */
+        #portada {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), 
+                        url('https://img.freepik.com/free-vector/watercolor-baby-shower-background_23-2149120689.jpg?w=1380');
+            background-size: cover;
+            background-position: center;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: transform 1s ease-in-out;
+        }
+
+        #portada.hide { transform: translateY(-100%); }
+
+        .welcome-msg {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            border-radius: 50% 50% 0 0;
+            border: 2px solid var(--pink-pastel);
+            margin-bottom: 20px;
+            max-width: 80%;
+        }
+
+        .welcome-msg h1 { font-family: 'Great Vibes', cursive; font-size: 3.5rem; color: var(--gold); }
+        .welcome-msg p { font-family: 'Poppins', sans-serif; font-size: 1.1rem; margin-top: 10px; }
+
+        .btn-open {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: var(--pink-pastel);
+            border: 2px solid var(--gold);
+            color: var(--text-color);
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: pulse 2s infinite;
+        }
+
+        /* --- CONTENIDO --- */
+        #main-content { display: none; opacity: 0; transition: opacity 1s ease; }
+        .section { padding: 60px 20px; max-width: 800px; margin: 0 auto; text-align: center; }
+        .card {
+            background: var(--white);
+            padding: 40px 25px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--lilac-pastel);
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        h2.title { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--gold); margin-bottom: 20px; }
+
+        /* --- CONTADOR --- */
+        #timer { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .time-unit { 
+            background: var(--pink-pastel); 
+            padding: 15px; border-radius: 15px; 
+            min-width: 70px; border-bottom: 4px solid var(--gold);
+        }
+        .time-unit span { display: block; font-size: 1.5rem; font-weight: bold; }
+        .time-unit label { font-size: 0.7rem; text-transform: uppercase; }
+
+        /* --- CALENDARIO --- */
+        .calendar-container { max-width: 350px; margin: 0 auto; }
+        .calendar-header { font-weight: bold; padding: 10px; background: var(--lilac-pastel); border-radius: 15px 15px 0 0; }
+        .calendar-grid { 
+            display: grid; grid-template-columns: repeat(7, 1fr); 
+            background: white; border: 1px solid var(--lilac-pastel); padding: 10px;
+            border-radius: 0 0 15px 15px;
+        }
+        .day { padding: 10px 0; font-size: 0.9rem; position: relative; }
+        .day-name { font-weight: bold; color: var(--gold); margin-bottom: 5px; }
+        .event-day {
+            background: var(--pink-pastel);
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+        .event-day::after {
+            content: '🧸'; 
+            position: absolute; top: -12px; right: -2px; font-size: 14px;
+        }
+
+        /* --- REPRODUCTOR OCULTO DE YT --- */
+        #yt-player-container { display: none; }
+        #music-player {
+            position: fixed; bottom: 20px; right: 20px;
+            background: white; padding: 10px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 500;
+            border: 2px solid var(--pink-pastel);
+        }
+        .music-btn { border: none; background: none; cursor: pointer; color: var(--gold); font-size: 1.2rem; }
+
+        /* --- MAPA --- */
+        #map { height: 300px; border-radius: 20px; margin: 20px 0; border: 3px solid var(--white); z-index: 10; }
+
+        /* --- BOTONES --- */
+        .btn-action {
+            display: inline-block; padding: 15px 30px;
+            background: #25D366; color: white;
+            text-decoration: none; border-radius: 50px;
+            font-weight: bold; margin: 10px;
+            transition: 0.3s; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        .btn-map { background: var(--gold); box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+
+        /* --- GALERÍA --- */
+        .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .gallery img { 
+            width: 100%; border-radius: 15px; transition: 0.3s; 
+            border: 5px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .gallery img:hover { transform: scale(1.05); }
+
+        /* --- CORAZONES --- */
+        .floating-heart {
+            position: fixed; color: var(--pink-pastel);
+            font-size: 20px; pointer-events: none;
+            z-index: 1; animation: floatUp 4s linear forwards;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Contenedor oculto para la API de YouTube -->
+    <div id="yt-player-container">
+        <div id="custom-yt-player"></div>
+    </div>
+
+    <div id="portada">
+        <div class="welcome-msg">
+            <h1>Baby Shower</h1>
+            <p id="msg-bienvenida"></p>
+        </div>
+        <button class="btn-open" onclick="abrirInvitacion()">Abrir invitación</button>
+    </div>
+
+    <div id="main-content">
+        <section class="section">
+            <div class="card" style="border-top: 8px solid var(--pink-pastel);">
+                <h2 class="title" id="display-nombre-bebe"></h2>
+                <p style="font-size: 1.2rem; font-weight: 500;">¡Falta muy poco!</p>
+                <div id="timer">
+                    <div class="time-unit"><span id="days">00</span><label>Días</label></div>
+                    <div class="time-unit"><span id="hours">00</span><label>Hrs</label></div>
+                    <div class="time-unit"><span id="minutes">00</span><label>Min</label></div>
+                    <div class="time-unit"><span id="seconds">00</span><label>Seg</label></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="title">¿Cuándo y Dónde?</h2>
+                <div class="calendar-container">
+                    <div class="calendar-header" id="month-name">Mes Año</div>
+                    <div class="calendar-grid" id="calendar-days"></div>
+                </div>
+                <div style="margin-top: 30px; text-align: left; padding: 0 20px;">
+                    <p><i class="fa-solid fa-calendar-days" style="color: var(--pink-pastel); margin-right: 10px;"></i> <span id="info-fecha"></span></p>
+                    <p><i class="fa-solid fa-clock" style="color: var(--soft-blue); margin-right: 10px;"></i> <span id="info-hora"></span></p>
+                    <p><i class="fa-solid fa-location-dot" style="color: var(--gold); margin-right: 10px;"></i> <span id="info-direccion"></span></p>
+                    <p><i class="fa-solid fa-shirt" style="color: var(--lilac-pastel); margin-right: 10px;"></i> <strong>Dress Code:</strong> <span id="info-dresscode"></span></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2 class="title">Ubicación</h2>
+                <div id="map"></div>
+                <button class="btn-action btn-map" onclick="irAMapa()">Ver en Google Maps</button>
+            </div>
+
+            <div class="card">
+                <h2 class="title">Confirmar Asistencia</h2>
+                <p>Tu presencia es nuestro mejor regalo. Por favor, confirma antes del evento.</p>
+                <a href="#" id="whatsapp-btn" class="btn-action" target="_blank"><i class="fa-brands fa-whatsapp"></i> Confirmar por WhatsApp</a>
+            </div>
+
+            <div class="card">
+                <h2 class="title">Galería</h2>
+                <div class="gallery">
+                    <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&q=80&w=300" alt="Baby 1">
+                    <img src="https://images.unsplash.com/photo-1555252333-978fe3c7e831?auto=format&fit=crop&q=80&w=300" alt="Baby 2">
+                    <img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=300" alt="Baby 3">
+                </div>
+            </div>
+        </section>
+
+        <footer class="section" style="padding-bottom: 100px;">
+            <p style="font-family: 'Great Vibes', cursive; font-size: 2rem; color: var(--gold);">Gracias por ser parte de nuestra historia</p>
+        </footer>
+    </div>
+
+    <div id="music-player">
+        <button class="music-btn" onclick="toggleMusic()"><i id="music-icon" class="fa-solid fa-play"></i></button>
+        <i class="fa-solid fa-music fa-beat" style="color: var(--pink-pastel)"></i>
+    </div>
+
+    <!-- Cargar la API de YouTube -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        /* 
+           =========================================
+           ZONA DE CONFIGURACIÓN
+           =========================================
+        */
+        const CONFIG = {
+            nombreBebe: "Elena María",
+            bienvenida: "Con mucha alegría queremos compartir contigo la espera de nuestra pequeña princesa.",
+            fechaEvento: "2026-10-17T16:00:00", // Formato: AAAA-MM-DDTHH:MM:SS
+            direccion: "Calle 25 #14-20, Barrio Boston, Sincelejo",
+            dressCode: "Rosa o tonos pastel",
+            telefonoWhatsApp: "573001234567", // Tu número real
+            mensajeWhatsApp: "¡Hola! Confirmo mi asistencia al Baby Shower de Elena María. ¡Ahí estaré! 👶💖",
+            latitud: 9.3005, 
+            longitud: -75.3978,
+            youtubeVideoId: "VrtMiYI5dFY" // El ID de tu canción favorita de YouTube
+        };
+
+        // Inyectar datos iniciales
+        document.getElementById('msg-bienvenida').innerText = CONFIG.bienvenida;
+        document.getElementById('display-nombre-bebe').innerText = CONFIG.nombreBebe;
+        document.getElementById('info-fecha').innerText = new Date(CONFIG.fechaEvento).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('info-hora').innerText = new Date(CONFIG.fechaEvento).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) + " hrs";
+        document.getElementById('info-direccion').innerText = CONFIG.direccion;
+        document.getElementById('info-dresscode').innerText = CONFIG.dressCode;
+
+        // Configurar WhatsApp
+        document.getElementById('whatsapp-btn').href = `https://wa.me/${CONFIG.telefonoWhatsApp}?text=${encodeURIComponent(CONFIG.mensajeWhatsApp)}`;
+
+        /* 
+           =========================================
+           LÓGICA DEL REPRODUCTOR DE YOUTUBE
+           =========================================
+        */
+        let player;
+        let musicaSonando = false;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('custom-yt-player', {
+                height: '0',
+                width: '0',
+                videoId: CONFIG.youtubeVideoId,
+                playerVars: {
+                    'autoplay': 0,
+                    'loop': 1,
+                    'playlist': CONFIG.youtubeVideoId // Requerido para que repita en bucle
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // El reproductor está listo, pero espera a que abran la invitación para sonar
+        }
+
+        function toggleMusic() {
+            if (!musicaSonando) {
+                player.playVideo();
+                document.getElementById('music-icon').classList.replace('fa-play', 'fa-pause');
+                musicaSonando = true;
+            } else {
+                player.pauseVideo();
+                document.getElementById('music-icon').classList.replace('fa-pause', 'fa-play');
+                musicaSonando = false;
+            }
+        }
+
+        /* 
+           =========================================
+           CONTROL ACCIONES DE LA PÁGINA
+           =========================================
+        */
+        function abrirInvitacion() {
+            document.getElementById('portada').classList.add('hide');
+            document.getElementById('main-content').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('main-content').style.opacity = '1';
+                initMap();
+                
+                // Intenta reproducir la canción de YouTube automáticamente
+                if(player && typeof player.playVideo === 'function') {
+                    player.playVideo();
+                    document.getElementById('music-icon').classList.replace('fa-play', 'fa-pause');
+                    musicaSonando = true;
+                }
+                
+                iniciarCorazones();
+            }, 100);
+        }
+
+        // Contador regresivo
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = new Date(CONFIG.fechaEvento).getTime() - now;
+
+            if (distance < 0) {
+                document.getElementById('timer').innerHTML = "<h3>¡Es hoy! Te esperamos.</h3>";
+                return;
+            }
+
+            document.getElementById('days').innerText = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+            document.getElementById('hours').innerText = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+            document.getElementById('minutes').innerText = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            document.getElementById('seconds').innerText = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+        }
+        setInterval(updateTimer, 1000);
+
+        // Calendario Dinámico
+        function drawCalendar() {
+            const fecha = new Date(CONFIG.fechaEvento);
+            const mes = fecha.getMonth();
+            const año = fecha.getFullYear();
+            const diaEvento = fecha.getDate();
+
+            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById('month-name').innerText = `${nombresMeses[mes]} ${año}`;
+
+            const firstDay = new Date(año, mes, 1).getDay();
+            const daysInMonth = new Date(año, mes + 1, 0).getDate();
+
+            const grid = document.getElementById('calendar-days');
+            const dayLabels = ["D", "L", "M", "M", "J", "V", "S"];
+            
+            dayLabels.forEach(d => {
+                const el = document.createElement('div');
+                el.classList.add('day', 'day-name');
+                el.innerText = d;
+                grid.appendChild(el);
+            });
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const el = document.createElement('div');
+                el.classList.add('day');
+                el.innerText = i;
+                if (i === diaEvento) {
+                    el.classList.add('event-day');
+                    el.onclick = () => alert("¡Ese es el gran día! Te esperamos.");
+                }
+                grid.appendChild(el);
+            }
+        }
+        drawCalendar();
+
+        // Inicializar Mapa con OpenStreetMap estable
+        function initMap() {
+            const map = L.map('map').setView([CONFIG.latitud, CONFIG.longitud], 15);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+            
+            L.marker([CONFIG.latitud, CONFIG.longitud]).addTo(map)
+                .bindPopup(`Baby Shower de ${CONFIG.nombreBebe}`)
+                .openPopup();
+        }
+
+        function irAMapa() {
+            window.open(`https://www.google.com/maps?q=${CONFIG.latitud},${CONFIG.longitud}`, '_blank');
+        }
+
+        // Animación de Corazones Flotantes
+        function iniciarCorazones() {
+            setInterval(() => {
+                const heart = document.createElement('i');
+                heart.classList.add('fa-solid', 'fa-heart', 'floating-heart');
+                heart.style.left = Math.random() * 100 + "vw";
+                heart.style.animationDuration = (Math.random() * 2 + 3) + "s";
+                heart.style.opacity = Math.random();
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 4000);
+            }, 600);
+        }
+    </script>
+</body>
+</html>
