@@ -38,24 +38,26 @@
                         url('https://img.freepik.com/free-vector/watercolor-baby-shower-background_23-2149120689.jpg?w=1380');
             background-size: cover;
             background-position: center;
-            z-index: 1000;
+            z-index: 10; /* Ajustado para que las decoraciones floten por encima */
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            transition: transform 1s ease-in-out;
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out;
         }
 
-        #portada.hide { transform: translateY(-100%); }
+        #portada.hide { transform: translateY(-100%); opacity: 0; pointer-events: none; }
 
         .welcome-msg {
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.85);
             padding: 30px;
             border-radius: 50% 50% 0 0;
             border: 2px solid var(--pink-pastel);
             margin-bottom: 20px;
             max-width: 80%;
+            position: relative;
+            z-index: 12;
         }
 
         .welcome-msg h1 { font-family: 'Great Vibes', cursive; font-size: 3.5rem; color: var(--gold); }
@@ -72,6 +74,8 @@
             font-weight: 600;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             animation: pulse 2s infinite;
+            position: relative;
+            z-index: 12;
         }
 
         /* --- CONTENIDO --- */
@@ -85,7 +89,7 @@
             border: 1px solid var(--lilac-pastel);
             margin-bottom: 40px;
             position: relative;
-            z-index: 2; /* Para quedar por encima de las nubes flotantes de fondo */
+            z-index: 5; 
         }
 
         h2.title { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--gold); margin-bottom: 20px; }
@@ -124,7 +128,7 @@
         }
 
         /* --- MAPA --- */
-        #map { height: 300px; border-radius: 20px; margin: 20px 0; border: 3px solid var(--white); z-index: 10; }
+        #map { height: 300px; border-radius: 20px; margin: 20px 0; border: 3px solid var(--white); z-index: 5; }
 
         /* --- BOTONES --- */
         .btn-action {
@@ -148,13 +152,13 @@
         .floating-element {
             position: fixed;
             pointer-events: none;
-            z-index: 1;
+            z-index: 100; /* Forzado al frente de todo para que se aprecie siempre */
             animation: floatUp 6s linear forwards;
             user-select: none;
         }
         .heart-style { color: var(--pink-pastel); font-size: 20px; }
-        .cloud-style { color: rgba(255, 255, 255, 0.85); font-size: 35px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.03)); }
-        .stork-style { font-size: 30px; }
+        .cloud-style { color: rgba(255, 255, 255, 0.9); font-size: 38px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.05)); }
+        .stork-style { font-size: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
@@ -162,7 +166,7 @@
             0% { transform: translateY(105vh) translateX(0); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
-            100% { transform: translateY(-15vh) translateX(50px); opacity: 0; }
+            100% { transform: translateY(-15vh) translateX(60px); opacity: 0; }
         }
     </style>
 </head>
@@ -179,11 +183,10 @@
     <div id="main-content">
         <section class="section">
             
-            <!-- TARJETA DEL REPRODUCTOR DE MÚSICA REESTRUCTURADO PARA GITHUB -->
+            <!-- REPRODUCTOR VISUAL AJUSTADO PARA GITHUB -->
             <div class="card" style="border-top: 8px solid var(--soft-blue);">
                 <h2 class="title" style="font-size: 2.2rem; margin-bottom: 5px;">🎵 Melodía de Espera</h2>
                 <p style="margin-bottom: 15px; font-size: 0.95rem;">Disfruta de la canción oficial mientras navegas por la tarjeta</p>
-                <!-- Contenedor estético que recorta y muestra limpiamente solo los controles legítimos de YT -->
                 <div id="yt-wrapper" style="position: relative; width: 100%; max-width: 280px; height: 50px; margin: 0 auto; overflow: hidden; border-radius: 30px; border: 2px solid var(--pink-pastel); background: #fff;">
                     <div id="custom-yt-player" style="position: absolute; top: -45px; left: 0; width: 100%; height: 140px;"></div>
                 </div>
@@ -241,26 +244,20 @@
         </footer>
     </div>
 
-    <!-- Script de la API de YouTube -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        /* 
-           =========================================
-           ZONA DE CONFIGURACIÓN
-           =========================================
-        */
         const CONFIG = {
             nombreBebe: "yanith teran",
             bienvenida: "Con mucha alegría queremos compartir contigo la espera de nuestra pequeña princesa.",
-            fechaEvento: "2026-10-17T16:00:00", // Formato: AAAA-MM-DDTHH:MM:SS
+            fechaEvento: "2026-10-17T16:00:00", 
             direccion: "Calle 25 #14-20, tuchin",
             telefonoWhatsApp: "+573106153732", 
             mensajeWhatsApp: "¡Hola! Confirmo mi asistencia al Baby Shower de Elena María. ¡Ahí estaré! 👶💖",
             latitud: 9.3005, 
             longitud: -75.3978,
-            youtubeVideoId: "VrtMiYI5dFY",
-            dressCode: "Pastel / Casual tierno" // Definido para evitar errores en el textInject
+            youtubeVideoId: "4Oc6PTtcthA", // ID de tu nueva canción
+            dressCode: "Pastel / Casual tierno"
         };
 
         // Inyectar datos iniciales
@@ -271,14 +268,9 @@
         document.getElementById('info-direccion').innerText = CONFIG.direccion;
         document.getElementById('info-dresscode').innerText = CONFIG.dressCode;
 
-        // Configurar WhatsApp
         document.getElementById('whatsapp-btn').href = `https://wa.me/${CONFIG.telefonoWhatsApp}?text=${encodeURIComponent(CONFIG.mensajeWhatsApp)}`;
 
-        /* 
-           =========================================
-           LÓGICA DEL REPRODUCTOR DE YOUTUBE (VISIBLE Y COMPATIBLE)
-           =========================================
-        */
+        /* YOUTUBE API SETUP */
         let player;
 
         function onYouTubeIframeAPIReady() {
@@ -286,18 +278,13 @@
                 videoId: CONFIG.youtubeVideoId,
                 playerVars: {
                     'autoplay': 0,
-                    'controls': 1, // Requerido para interacción directa si se requiere aprobación manual
+                    'controls': 1,
                     'loop': 1,
                     'playlist': CONFIG.youtubeVideoId 
                 }
             });
         }
 
-        /* 
-           =========================================
-           CONTROL ACCIONES DE LA PÁGINA
-           =========================================
-        */
         function abrirInvitacion() {
             document.getElementById('portada').classList.add('hide');
             document.getElementById('main-content').style.display = 'block';
@@ -305,12 +292,10 @@
                 document.getElementById('main-content').style.opacity = '1';
                 initMap();
                 
-                // Intenta reproducir de manera limpia tras interactuar (clic en el botón de la portada)
+                // Activa automáticamente la música al presionar "Abrir invitación"
                 if(player && typeof player.playVideo === 'function') {
                     player.playVideo();
                 }
-                
-                iniciarElementosMagicos();
             }, 100);
         }
 
@@ -371,7 +356,6 @@
         }
         drawCalendar();
 
-        // Inicializar Mapa con OpenStreetMap estable
         function initMap() {
             const map = L.map('map').setView([CONFIG.latitud, CONFIG.longitud], 15);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -387,39 +371,38 @@
             window.open(`https://www.google.com/maps?q=${CONFIG.latitud},${CONFIG.longitud}`, '_blank');
         }
 
-        // Generador de Corazones, Nubes y Cigüeñas Flotantes
+        // Sistema Decorativo que inicia INMEDIATAMENTE al cargar la página
         function iniciarElementosMagicos() {
             setInterval(() => {
                 const rand = Math.random();
                 let element;
 
-                if (rand < 0.5) {
-                    // 50% de probabilidad: Corazón clásico flotante
+                if (rand < 0.4) {
                     element = document.createElement('i');
                     element.classList.add('fa-solid', 'fa-heart', 'floating-element', 'heart-style');
-                } else if (rand < 0.8) {
-                    // 30% de probabilidad: Lindas Nubes de algodón blancas
+                } else if (rand < 0.75) {
                     element = document.createElement('i');
                     element.classList.add('fa-solid', 'fa-cloud', 'floating-element', 'cloud-style');
                 } else {
-                    // 20% de probabilidad: Cigüeñas trayendo al bebé (Emoji)
                     element = document.createElement('div');
                     element.classList.add('floating-element', 'stork-style');
                     element.innerText = "🦤"; 
                 }
 
                 element.style.left = Math.random() * 90 + "vw";
-                element.style.animationDuration = (Math.random() * 3 + 4) + "s"; // entre 4s y 7s
+                element.style.animationDuration = (Math.random() * 3 + 4) + "s"; // De 4 a 7 segundos flotando
                 
-                // Variación de opacidad para efecto tridimensional
                 if (!element.innerText) {
-                    element.style.opacity = Math.random() * 0.6 + 0.4;
+                    element.style.opacity = Math.random() * 0.5 + 0.5;
                 }
 
                 document.body.appendChild(element);
                 setTimeout(() => element.remove(), 7000);
-            }, 700); // Aparece un elemento nuevo cada 700 milisegundos
+            }, 600); // Frecuencia balanceada de elementos flotantes
         }
+
+        // Ejecutar las animaciones desde el inicio
+        window.addEventListener('DOMContentLoaded', iniciarElementosMagicos);
     </script>
 </body>
 </html>
