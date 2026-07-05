@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baby Shower - Invitación Especial</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Great+Vibes&family=Poppins:wght@300;400;600&family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght=700&family=Great+Vibes&family=Poppins:wght=300;400;600&family=Quicksand:wght=300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -85,6 +85,7 @@
             border: 1px solid var(--lilac-pastel);
             margin-bottom: 40px;
             position: relative;
+            z-index: 2; /* Para quedar por encima de las nubes flotantes de fondo */
         }
 
         h2.title { font-family: 'Dancing Script', cursive; font-size: 3rem; color: var(--gold); margin-bottom: 20px; }
@@ -122,17 +123,6 @@
             position: absolute; top: -12px; right: -2px; font-size: 14px;
         }
 
-        /* --- REPRODUCTOR OCULTO DE YT --- */
-        #yt-player-container { display: none; }
-        #music-player {
-            position: fixed; bottom: 20px; right: 20px;
-            background: white; padding: 10px; border-radius: 50px;
-            display: flex; align-items: center; gap: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 500;
-            border: 2px solid var(--pink-pastel);
-        }
-        .music-btn { border: none; background: none; cursor: pointer; color: var(--gold); font-size: 1.2rem; }
-
         /* --- MAPA --- */
         #map { height: 300px; border-radius: 20px; margin: 20px 0; border: 3px solid var(--white); z-index: 10; }
 
@@ -154,27 +144,29 @@
         }
         .gallery img:hover { transform: scale(1.05); }
 
-        /* --- CORAZONES --- */
-        .floating-heart {
-            position: fixed; color: var(--pink-pastel);
-            font-size: 20px; pointer-events: none;
-            z-index: 1; animation: floatUp 4s linear forwards;
+        /* --- ELEMENTOS DECORATIVOS FLOTANTES --- */
+        .floating-element {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatUp 6s linear forwards;
+            user-select: none;
         }
+        .heart-style { color: var(--pink-pastel); font-size: 20px; }
+        .cloud-style { color: rgba(255, 255, 255, 0.85); font-size: 35px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.03)); }
+        .stork-style { font-size: 30px; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
         @keyframes floatUp {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+            0% { transform: translateY(105vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-15vh) translateX(50px); opacity: 0; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Contenedor oculto para la API de YouTube -->
-    <div id="yt-player-container">
-        <div id="custom-yt-player"></div>
-    </div>
 
     <div id="portada">
         <div class="welcome-msg">
@@ -186,6 +178,17 @@
 
     <div id="main-content">
         <section class="section">
+            
+            <!-- TARJETA DEL REPRODUCTOR DE MÚSICA REESTRUCTURADO PARA GITHUB -->
+            <div class="card" style="border-top: 8px solid var(--soft-blue);">
+                <h2 class="title" style="font-size: 2.2rem; margin-bottom: 5px;">🎵 Melodía de Espera</h2>
+                <p style="margin-bottom: 15px; font-size: 0.95rem;">Disfruta de la canción oficial mientras navegas por la tarjeta</p>
+                <!-- Contenedor estético que recorta y muestra limpiamente solo los controles legítimos de YT -->
+                <div id="yt-wrapper" style="position: relative; width: 100%; max-width: 280px; height: 50px; margin: 0 auto; overflow: hidden; border-radius: 30px; border: 2px solid var(--pink-pastel); background: #fff;">
+                    <div id="custom-yt-player" style="position: absolute; top: -45px; left: 0; width: 100%; height: 140px;"></div>
+                </div>
+            </div>
+
             <div class="card" style="border-top: 8px solid var(--pink-pastel);">
                 <h2 class="title" id="display-nombre-bebe"></h2>
                 <p style="font-size: 1.2rem; font-weight: 500;">¡Falta muy poco!</p>
@@ -238,12 +241,7 @@
         </footer>
     </div>
 
-    <div id="music-player">
-        <button class="music-btn" onclick="toggleMusic()"><i id="music-icon" class="fa-solid fa-play"></i></button>
-        <i class="fa-solid fa-music fa-beat" style="color: var(--pink-pastel)"></i>
-    </div>
-
-    <!-- Cargar la API de YouTube -->
+    <!-- Script de la API de YouTube -->
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
@@ -257,11 +255,12 @@
             bienvenida: "Con mucha alegría queremos compartir contigo la espera de nuestra pequeña princesa.",
             fechaEvento: "2026-10-17T16:00:00", // Formato: AAAA-MM-DDTHH:MM:SS
             direccion: "Calle 25 #14-20, tuchin",
-            telefonoWhatsApp: "573001234567", // Tu número real
+            telefonoWhatsApp: "+573106153732", 
             mensajeWhatsApp: "¡Hola! Confirmo mi asistencia al Baby Shower de Elena María. ¡Ahí estaré! 👶💖",
             latitud: 9.3005, 
             longitud: -75.3978,
-            youtubeVideoId: "VrtMiYI5dFY" // El ID de tu canción favorita de YouTube
+            youtubeVideoId: "VrtMiYI5dFY",
+            dressCode: "Pastel / Casual tierno" // Definido para evitar errores en el textInject
         };
 
         // Inyectar datos iniciales
@@ -277,42 +276,21 @@
 
         /* 
            =========================================
-           LÓGICA DEL REPRODUCTOR DE YOUTUBE
+           LÓGICA DEL REPRODUCTOR DE YOUTUBE (VISIBLE Y COMPATIBLE)
            =========================================
         */
         let player;
-        let musicaSonando = false;
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('custom-yt-player', {
-                height: '0',
-                width: '0',
                 videoId: CONFIG.youtubeVideoId,
                 playerVars: {
                     'autoplay': 0,
+                    'controls': 1, // Requerido para interacción directa si se requiere aprobación manual
                     'loop': 1,
-                    'playlist': CONFIG.youtubeVideoId // Requerido para que repita en bucle
-                },
-                events: {
-                    'onReady': onPlayerReady
+                    'playlist': CONFIG.youtubeVideoId 
                 }
             });
-        }
-
-        function onPlayerReady(event) {
-            // El reproductor está listo, pero espera a que abran la invitación para sonar
-        }
-
-        function toggleMusic() {
-            if (!musicaSonando) {
-                player.playVideo();
-                document.getElementById('music-icon').classList.replace('fa-play', 'fa-pause');
-                musicaSonando = true;
-            } else {
-                player.pauseVideo();
-                document.getElementById('music-icon').classList.replace('fa-pause', 'fa-play');
-                musicaSonando = false;
-            }
         }
 
         /* 
@@ -327,14 +305,12 @@
                 document.getElementById('main-content').style.opacity = '1';
                 initMap();
                 
-                // Intenta reproducir la canción de YouTube automáticamente
+                // Intenta reproducir de manera limpia tras interactuar (clic en el botón de la portada)
                 if(player && typeof player.playVideo === 'function') {
                     player.playVideo();
-                    document.getElementById('music-icon').classList.replace('fa-play', 'fa-pause');
-                    musicaSonando = true;
                 }
                 
-                iniciarCorazones();
+                iniciarElementosMagicos();
             }, 100);
         }
 
@@ -411,17 +387,38 @@
             window.open(`https://www.google.com/maps?q=${CONFIG.latitud},${CONFIG.longitud}`, '_blank');
         }
 
-        // Animación de Corazones Flotantes
-        function iniciarCorazones() {
+        // Generador de Corazones, Nubes y Cigüeñas Flotantes
+        function iniciarElementosMagicos() {
             setInterval(() => {
-                const heart = document.createElement('i');
-                heart.classList.add('fa-solid', 'fa-heart', 'floating-heart');
-                heart.style.left = Math.random() * 100 + "vw";
-                heart.style.animationDuration = (Math.random() * 2 + 3) + "s";
-                heart.style.opacity = Math.random();
-                document.body.appendChild(heart);
-                setTimeout(() => heart.remove(), 4000);
-            }, 600);
+                const rand = Math.random();
+                let element;
+
+                if (rand < 0.5) {
+                    // 50% de probabilidad: Corazón clásico flotante
+                    element = document.createElement('i');
+                    element.classList.add('fa-solid', 'fa-heart', 'floating-element', 'heart-style');
+                } else if (rand < 0.8) {
+                    // 30% de probabilidad: Lindas Nubes de algodón blancas
+                    element = document.createElement('i');
+                    element.classList.add('fa-solid', 'fa-cloud', 'floating-element', 'cloud-style');
+                } else {
+                    // 20% de probabilidad: Cigüeñas trayendo al bebé (Emoji)
+                    element = document.createElement('div');
+                    element.classList.add('floating-element', 'stork-style');
+                    element.innerText = "🦤"; 
+                }
+
+                element.style.left = Math.random() * 90 + "vw";
+                element.style.animationDuration = (Math.random() * 3 + 4) + "s"; // entre 4s y 7s
+                
+                // Variación de opacidad para efecto tridimensional
+                if (!element.innerText) {
+                    element.style.opacity = Math.random() * 0.6 + 0.4;
+                }
+
+                document.body.appendChild(element);
+                setTimeout(() => element.remove(), 7000);
+            }, 700); // Aparece un elemento nuevo cada 700 milisegundos
         }
     </script>
 </body>
